@@ -13,10 +13,11 @@ defaultFishConfigurationFilePathString="\$HOME/.config/fish/config.fish";
 defaultFishConfigurationFilePath="$(eval "echo \"$defaultFishConfigurationFilePathString\"")";
 
 usage() {
-  echo -e "Usage: $(basename "$0") [-h] [-c <userConfigurationFilePath>] [-f]";
+  echo -e "Usage: $(basename "$0") [-h] [-c <userConfigurationFilePath>] [-f] [-o]";
   echo -e "\t-h - Displays help text for using this script, and then exits.";
   echo -e "\t-c userConfigurationFilePath - Accepts a string containing the expected output file path for the current user's terminal configuration file.";
   echo -e "\t-f - Instead of generating Bash-supported instructions, generates instructions that install the convenience command for the Friendly Interactive SHell.  Changes the default terminal configuration file path to \"$defaultFishConfigurationFilePath\"";
+  echo -e "\t-o - Instead of directly storing the instructions inside of a terminal configuration file, outputs them to the terminal.";
   echo -e "";
   echo -e "By default, this script installs to the \"$defaultConfigurationFilePathString\" terminal login configuration file.";
   echo -e "The file's existing contents will be preserved, with the contents added by this script only if they do not already exist.";
@@ -24,7 +25,7 @@ usage() {
   exit 1;
 }
 
-while getopts ":c:hf" option; do
+while getopts ":c:hfo" option; do
   case "$option" in
     h)
       usage;
@@ -35,6 +36,9 @@ while getopts ":c:hf" option; do
     f)
       generateFishConfiguration="true";
       userConfigurationFilePath="$defaultFishConfigurationFilePath";
+    ;;
+    o)
+      outputToTerminal="true";
     ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2;
@@ -74,13 +78,17 @@ debugPrint "generateFishConfiguration: $generateFishConfiguration";
 debugPrint "commandString: $commandString";
 debugPrint "commandStringIdentifier: $commandStringIdentifier";
 
-if [[ ! -f "$userConfigurationFilePath" ]]; then
-  touch "$userConfigurationFilePath";
-fi
-
-if grep -Fq "$commandStringIdentifier" "$userConfigurationFilePath"; then
-  echo "Instruction found; exiting without changes...";
+if [[ "$outputToTerminal" == "true" ]]; then
+  echo "$commandString";
 else
-  echo "Instruction not found; inserting instruction...";
-  echo -e "\n\n$commandString" >> "$userConfigurationFilePath";
+  if [[ ! -f "$userConfigurationFilePath" ]]; then
+    touch "$userConfigurationFilePath";
+  fi
+  
+  if grep -Fq "$commandStringIdentifier" "$userConfigurationFilePath"; then
+    echo "Instruction found; exiting without changes...";
+  else
+    echo "Instruction not found; inserting instruction...";
+    echo -e "\n\n$commandString" >> "$userConfigurationFilePath";
+  fi
 fi

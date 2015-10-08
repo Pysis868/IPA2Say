@@ -32,6 +32,10 @@ I will however, take credit for making the install script which adds the conveni
      ./install.sh -f
    ```
      Note: You may also use the `-c` switch in this case.
+  - Custom Installation; outputs text to the terminal that can be piped into anything of your choice using the `-o` switch:
+   ```bash
+    ./install.sh -o
+   ```
 
 ## Usage
 
